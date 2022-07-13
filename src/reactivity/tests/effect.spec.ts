@@ -15,4 +15,15 @@ describe("effect", () => {
         expect(nextAge).toBe(22)
     });
 
+    it("effect should return runner", () => {
+        let foo = 10
+        let runner = effect(() => {
+            foo++
+            return 'foo'
+        })
+        expect(foo).toBe(11)
+        let r = runner()
+        expect(foo).toBe(12)
+        expect(r).toBe('foo')
+    });
 })
