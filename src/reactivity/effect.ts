@@ -1,5 +1,5 @@
+import {extend} from '../shard'
 let activeEffect
-
 class ReactiveEffect {
     private _fn: any;
     active = true
@@ -34,7 +34,7 @@ function cleanupEffect(effect){
 }
 export function effect(fn, options: any = {}) {
     const _effect = new ReactiveEffect(fn)
-    Object.assign(_effect,options)
+    extend(_effect,options)
     _effect.run()
     const runner: any = _effect.run.bind(_effect)
     runner.effect = _effect
