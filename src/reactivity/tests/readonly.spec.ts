@@ -1,4 +1,4 @@
-import {isReactive, isReadonly, readonly, shallowReadonly} from "../reactive";
+import {isProxy, isReactive, isReadonly, readonly, shallowReadonly} from "../reactive";
 import {effect} from "../effect";
 
 describe('readonly', () => {
@@ -13,6 +13,7 @@ describe('readonly', () => {
         expect(wrapped.foo).toBe(1)
         expect(isReadonly(wrapped)).toBe(true)
         expect(isReadonly(original)).toBe(false)
+        expect(isProxy(wrapped)).toBe(true)
     })
     it('should warn when update readonly prop value', () => {
         // 这里使用 jest.fn
@@ -21,7 +22,7 @@ describe('readonly', () => {
         readonlyObj.foo = 2
         expect(console.warn).toHaveBeenCalled()
     })
-    it('should readonly nested object', () => {
+    it('nested readonly', () => {
         const nested = {foo: {innerFoo: 1}, bar: [{innerBar: 2}]}
         const wrapped = readonly(nested)
         expect(isReadonly(wrapped.foo)).toBe(true)
