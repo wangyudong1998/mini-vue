@@ -1,11 +1,13 @@
-import { track, trigger } from './effect'
+import {track, trigger} from './effect'
 import {reactive, ReactiveFlags, readonly} from "./reactive";
-import {isObject} from "../shard";
+import {extend, isObject} from "../shard";
 
 const get = createGetter()
 const readonlyGet = createGetter(true)
+const shallowReadonlyGet = createGetter(true, true)
 const set = createSetter()
-function createGetter(isReadonly = false) {
+
+function createGetter(isReadonly = false, isShallow = false) {
     return function get(target, key, receiver) {
         if (key === ReactiveFlags.IS_REACTIVE) {
             return !isReadonly
@@ -13,9 +15,12 @@ function createGetter(isReadonly = false) {
             return isReadonly
         }
         const res = Reflect.get(target, key, receiver)
+        if (isShallow) {
+            return res
+        }
         //嵌套对象的转换
-        if(isObject(res)){
-            return isReadonly?readonly(res):reactive(res)
+        if (isObject(res)) {
+            return isReadonly ? readonly(res) : reactive(res)
         }
         // 在 get 时收集依赖
         if (!isReadonly) {
@@ -47,3 +52,10 @@ export const readonlyHandlers = {
         return true
     },
 }
+export const shallowReadonlyHandlers = extend(
+    {},
+    readonlyHandlers,
+    {
+        get: shallowReadonlyGet
+    }
+)
