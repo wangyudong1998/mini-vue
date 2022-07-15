@@ -37,6 +37,10 @@ class ReactiveEffect {
         if (this.active) {
             cleanupEffect(this)
         }
+        if (this.onStop) {
+            this.onStop()
+        }
+        this.active = false
     }
 }
 
@@ -44,10 +48,6 @@ function cleanupEffect(effect) {
     effect.deps.forEach((dep: any) => {
         dep.delete(effect)
     })
-    if (effect.onStop) {
-        effect.onStop()
-    }
-    effect.active = false
     effect.deps.length=0
 }
 
@@ -67,6 +67,7 @@ export function stop(runner) {
 const targetMap = new WeakMap()
 
 export function track(target, key) {
+    if(!isTracking()) return;
     let depsMap = targetMap.get(target)
     if (!depsMap) {
         depsMap = new Map()
@@ -77,12 +78,13 @@ export function track(target, key) {
         dep = new Set()
         depsMap.set(key, dep)
     }
-    if (!activeEffect) return
-    if (!shouldTrack) return;
+    if(dep.has(activeEffect))return;
     dep.add(activeEffect)
     activeEffect.deps.push(dep)
 }
-
+function isTracking(){
+    return shouldTrack&&activeEffect!==undefined
+}
 export function trigger(target, key) {
     let depsMap = targetMap.get(target)
     let dep = depsMap.get(key)
