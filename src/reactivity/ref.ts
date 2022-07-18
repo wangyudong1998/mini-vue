@@ -52,7 +52,7 @@ export function proxyRefs(objectWithRef){
             // 第二种情况就是原来的值是 ref，newValue 也是一个 ref
             // 那么就直接替换就 OK 了
             if(isRef(target[key])&&!isRef(value)){
-                return target[key].value=value
+                return (target[key].value=value)
             }else{
                 return Reflect.set(target,key,value,receiver)
             }
