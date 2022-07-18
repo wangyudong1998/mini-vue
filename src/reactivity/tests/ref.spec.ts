@@ -1,4 +1,4 @@
-import {isRef, ref, unRef} from "../ref";
+import {isRef, proxyRefs, ref, unRef} from "../ref";
 import {effect} from "../effect";
 import {isReactive, reactive} from "../reactive";
 
@@ -48,4 +48,23 @@ it('unRef', () => {
     const a=ref(1)
     expect(unRef(a)).toBe(1)
     expect(unRef(1)).toBe(1)
+})
+it('proxyRef', () => {
+    const foo = {
+        bar: ref(1),
+        baz: 'baz',
+    }
+    // get
+    const proxyFoo = proxyRefs(foo)
+    expect(proxyFoo.bar).toBe(1)
+    expect(foo.bar.value).toBe(1)
+
+    // set
+    proxyFoo.bar=10
+    expect(proxyFoo.bar).toBe(10)
+    expect(foo.bar.value).toBe(10)
+
+    proxyFoo.bar=ref(20)
+    expect(proxyFoo.bar).toBe(20)
+    expect(foo.bar.value).toBe(20)
 })
