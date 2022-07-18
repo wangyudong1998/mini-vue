@@ -1,6 +1,6 @@
-import {ref} from "../ref";
+import {isRef, ref, unRef} from "../ref";
 import {effect} from "../effect";
-import {isReactive} from "../reactive";
+import {isReactive, reactive} from "../reactive";
 
 it('happy path', () => {
     const refFoo = ref(1)
@@ -38,4 +38,14 @@ it('should make nested properties reactive', () => {
     expect(dummy).toBe(2)
     expect(isReactive(a.value)).toBe(true)
     expect(calls).toBe(2)
+})
+it('isRef', () => {
+    expect(isRef(1)).toBe(false)
+    expect(isRef(ref(1))).toBe(true)
+    expect(isRef(reactive({ foo: 1 }))).toBe(false)
+})
+it('unRef', () => {
+    const a=ref(1)
+    expect(unRef(a)).toBe(1)
+    expect(unRef(1)).toBe(1)
 })

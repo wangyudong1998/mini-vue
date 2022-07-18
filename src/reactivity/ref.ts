@@ -1,14 +1,17 @@
 import {isTracking, trackEffect, triggerEffect} from "./effect";
 import {hasChanged, isObject} from "../shard";
 import {reactive} from "./reactive";
-
+const enum RefFlags {
+    IS_REF = '__v_isRef',
+}
 class RefImpl {
     private _value: any;
     private _rawValue: any;
-    dep = new Set()
+    public dep = new Set()
     constructor(value) {
         this._rawValue=value
         this._value = convert(value)
+        this[RefFlags.IS_REF] = true
     }
     get value() {
         if (isTracking()) {
@@ -31,4 +34,10 @@ function convert(value){
 }
 export function ref(value) {
     return new RefImpl(value)
+}
+export function isRef(ref){
+    return !!ref['__v_isRef']
+}
+export function unRef(ref){
+    return isRef(ref)?ref.value:ref
 }
