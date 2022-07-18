@@ -66,6 +66,10 @@ export function stop(runner) {
 
 const targetMap = new WeakMap()
 
+export function isTracking(){
+    return shouldTrack&&activeEffect!==undefined
+}
+
 export function track(target, key) {
     if(!isTracking()) return;
     let depsMap = targetMap.get(target)
@@ -78,16 +82,20 @@ export function track(target, key) {
         dep = new Set()
         depsMap.set(key, dep)
     }
+    trackEffect(dep)
+}
+export function trackEffect(dep){
     if(dep.has(activeEffect))return;
     dep.add(activeEffect)
     activeEffect.deps.push(dep)
 }
-function isTracking(){
-    return shouldTrack&&activeEffect!==undefined
-}
+
 export function trigger(target, key) {
     let depsMap = targetMap.get(target)
     let dep = depsMap.get(key)
+    triggerEffect(dep)
+}
+export function triggerEffect(dep){
     for (const depElement of dep) {
         if (depElement.scheduler) {
             depElement.scheduler()
