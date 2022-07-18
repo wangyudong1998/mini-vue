@@ -4,7 +4,7 @@ let activeEffect
 //是否应该收集依赖
 let shouldTrack = false
 
-class ReactiveEffect {
+export class ReactiveEffect {
     private _fn: any;
     // [stop] 该 effect 是否调用过 stop 方法了
     // true 未调用 false 调用
@@ -52,7 +52,7 @@ function cleanupEffect(effect) {
 }
 
 export function effect(fn, options: any = {}) {
-    const _effect = new ReactiveEffect(fn)
+    const _effect = new ReactiveEffect(fn,options.scheduler)
     extend(_effect, options)
     _effect.run()
     const runner: any = _effect.run.bind(_effect)
