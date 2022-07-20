@@ -7,7 +7,7 @@ export function createApp(rootComponent) {
             // 先将 rootComponent 转为 vnode
             // 后续所有的逻辑操作都会基于vnode做处理
             const vnode = createVNode(rootComponent)
-            render(vnode, rootContainer);
+            render(vnode, document.querySelector(rootContainer));
         }
     }
 }

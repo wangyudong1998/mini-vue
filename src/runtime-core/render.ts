@@ -6,8 +6,11 @@ export function render(vnode,container){
 }
 function patch(vnode,container){
     // 判断节点类型
-    // TODO 先默认为组件类型
-    processComponent(vnode,container)
+    if(typeof vnode.type==='string'){
+
+    }else if(typeof vnode.type==='object'){
+        processComponent(vnode,container)
+    }
 }
 function processComponent(vnode:any,container:any){
     mountComponent(vnode,container)
