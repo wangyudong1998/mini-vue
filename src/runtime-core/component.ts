@@ -1,8 +1,11 @@
+import {publicInstanceProxyHandlers} from "./componentPublicInstance";
+
 export function createComponentInstance(vnode: any) {
     // 返回一个 component 结构的数据
     const component = {
         vnode,
-        type: vnode.type
+        type: vnode.type,
+        setupState: {}
     }
     return component
 }
@@ -19,7 +22,13 @@ function setupStatefulComponent(instance: any) {
     // 通过对初始化的逻辑进行梳理后我们发现，在 createVNode() 函数中将 rootComponent 挂载到了 vNode.type
     // 而 vNode 又通过 instance 挂载到的 instance.vnode 中
     // 所以就可以通过这里传入的 instance.vnode.type 获取到用户定义的 rootComponent
-    const component = instance.vnode.type
+    const component = instance.type
+    // 在这里对于 instance 的 this 进行拦截
+    instance.proxy = new Proxy(
+        {_: instance},
+        publicInstanceProxyHandlers
+    )
+
     const {setup} = component
     // 这里需要判断一下，因为用户是不一定会写 setup 的，所以我们要给其一个默认值
     if (setup) {

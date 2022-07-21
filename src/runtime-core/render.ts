@@ -23,9 +23,9 @@ function processElement(vnode, container) {
 
 function mountElement(vnode, container) {
     const {type, props, child} = vnode
-    let el = document.createElement(type)
+    let el = vnode.el = document.createElement(type)
     for (const propKey in props) {
-        el.setAttribute(propKey,props[propKey])
+        el.setAttribute(propKey, props[propKey])
     }
     if (isString(child)) {
         el.textContent = child
@@ -37,7 +37,7 @@ function mountElement(vnode, container) {
 
 function mountChild(child: any, container: any) {
     for (const childElement of child) {
-        patch(childElement,container)
+        patch(childElement, container)
     }
 }
 
@@ -45,15 +45,18 @@ function processComponent(vnode: any, container: any) {
     mountComponent(vnode, container)
 }
 
-function mountComponent(vnode: any, container) {
+function mountComponent(initialVnode: any, container) {
     // 通过vnode创建组件实例
-    const instance = createComponentInstance(vnode)
+    const instance = createComponentInstance(initialVnode)
     // 组件初始化
     setupComponent(instance)
-    setupRenderEffect(instance, container)
+    setupRenderEffect(initialVnode, instance, container)
 }
 
-function setupRenderEffect(instance, container) {
-    const subTree = instance.render()
+function setupRenderEffect(vnode, instance, container) {
+    const {proxy} = instance
+    const subTree = instance.render.call(proxy)
     patch(subTree, container)
+    // 当所有element都mount 完后将根结点el赋值到组件的虚拟节点上
+    vnode.el = subTree.el
 }

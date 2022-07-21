@@ -2,6 +2,7 @@ export function createVNode(type, props?, child?) {
     return {
         type,
         props,
-        child
+        child,
+        el:null
     }
 }
