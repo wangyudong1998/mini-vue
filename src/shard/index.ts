@@ -18,3 +18,11 @@ export function isOn(key){
 export function hasOwn(obj,key){
     return Object.prototype.hasOwnProperty.call(obj,key)
 }
+export function capitalize(str:string){
+    return str.charAt(0).toUpperCase()+str.slice(1)
+}
+export function camelize(str:string){
+    return str.replace(/-(\w)/g,(_,c)=>{
+        return c?c.toUpperCase():''
+    })
+}

@@ -1,6 +1,7 @@
 import {publicInstanceProxyHandlers} from "./componentPublicInstance";
 import {initProps} from "./componentProps";
 import {shallowReadonly} from "../reactivity/reactive";
+import {emit} from "./componentEmit";
 
 export function createComponentInstance(vnode: any) {
     // 返回一个 component 结构的数据
@@ -8,8 +9,10 @@ export function createComponentInstance(vnode: any) {
         vnode,
         type: vnode.type,
         setupState: {},
-        props:{}
+        props:{},
+        emit:()=>{}
     }
+    component.emit=emit.bind(null,vnode.props) as any
     return component
 }
 
@@ -38,7 +41,7 @@ function setupStatefulComponent(instance: any) {
         // 获取到 setup() 的返回值，这里有两种情况，如果返回的是 function，那么这个 function 将会作为组件的 render
         // 反之就是 setupState，将其注入到上下文中
         // props是不可以被修改的
-        const setupResult = setup(shallowReadonly(instance.props))
+        const setupResult = setup(shallowReadonly(instance.props),{emit:instance.emit})
         // 调用初始化结束函数
         handleSetupResult(instance, setupResult)
     }

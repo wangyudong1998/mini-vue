@@ -8,19 +8,25 @@ export const App = {
             'div',
             {
                 id: 'root',
-                onClick: () => {
-                    console.log('click')
-                }
             },
             [
-                h('h1', {class: ['child2']}, this.msg),
-                h(foo,{count:1})
+                h('h1', {
+                    class: ['child2'],
+                    onClick: () => {
+                        console.log(`click---${this.msg}`)
+                    }
+                }, this.msg),
+                h(foo, {text: 'Add',onButtonClick:this.click})
             ]
         )
     },
     setup() {
+        const click=(...arg)=>{
+            console.log('button-click',arg)
+        }
         return {
-            msg: 'mini-vue'
+            msg: 'mini-vue',
+            click
         }
     }
 }
