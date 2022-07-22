@@ -12,3 +12,6 @@ export function isArray(val){
 export function hasChanged(value,newValue){
     return !Object.is(value,newValue)
 }
+export function isOn(key){
+    return /^on[A-Z]/.test(key)
+}

@@ -1,5 +1,5 @@
 import {createComponentInstance, setupComponent} from "./component";
-import {isArray, isObject, isString} from "../shard/index";
+import {isArray, isObject, isOn, isString} from "../shard/index";
 
 export function render(vnode, container) {
     // 调用 patch 方法，对于子节点进行递归处理
@@ -25,7 +25,13 @@ function mountElement(vnode, container) {
     const {type, props, child} = vnode
     let el = vnode.el = document.createElement(type)
     for (const propKey in props) {
-        el.setAttribute(propKey, props[propKey])
+        //事件
+        if (isOn(propKey)) {
+            let event=propKey.slice(2).toLowerCase()
+            el.addEventListener(event,props[propKey])
+        } else {
+            el.setAttribute(propKey, props[propKey])
+        }
     }
     if (isString(child)) {
         el.textContent = child

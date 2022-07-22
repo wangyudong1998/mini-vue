@@ -2,13 +2,19 @@ import {h} from "../../lib/mini-vue.esm.js"
 
 export const App = {
     render() {
-        window.self=this
+        window.self = this
         return h(
             'div',
-            {id: 'root'},
+            {
+                id: 'root',
+            },
             [
-                h('h1', null, this.msg),
-                h('div', {class: 'child2'}, 'child2')
+                h('h1', {
+                    onClick: () => {
+                        console.log('click')
+                    }
+                }, this.msg),
+                h('div', {class: ['child2']}, 'child2')
             ]
         )
     },
