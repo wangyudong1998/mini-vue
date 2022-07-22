@@ -15,3 +15,6 @@ export function hasChanged(value,newValue){
 export function isOn(key){
     return /^on[A-Z]/.test(key)
 }
+export function hasOwn(obj,key){
+    return Object.prototype.hasOwnProperty.call(obj,key)
+}
