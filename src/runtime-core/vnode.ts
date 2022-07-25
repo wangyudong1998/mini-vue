@@ -1,8 +1,8 @@
-export function createVNode(type, props?, child?) {
+export function createVNode(type, props?, children?) {
     return {
         type,
         props,
-        child,
+        children,
         el:null
     }
 }

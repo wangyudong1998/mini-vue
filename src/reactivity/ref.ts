@@ -1,5 +1,5 @@
 import {isTracking, trackEffect, triggerEffect} from "./effect";
-import {hasChanged, isObject} from "../shard";
+import {hasChanged, isObject} from "../shard/index";
 import {reactive} from "./reactive";
 const enum RefFlags {
     IS_REF = '__v_isRef',

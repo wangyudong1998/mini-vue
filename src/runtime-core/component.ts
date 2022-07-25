@@ -2,6 +2,7 @@ import {publicInstanceProxyHandlers} from "./componentPublicInstance";
 import {initProps} from "./componentProps";
 import {shallowReadonly} from "../reactivity/reactive";
 import {emit} from "./componentEmit";
+import {initSlots} from "./componentSlots";
 
 export function createComponentInstance(vnode: any) {
     // 返回一个 component 结构的数据
@@ -10,6 +11,7 @@ export function createComponentInstance(vnode: any) {
         type: vnode.type,
         setupState: {},
         props:{},
+        slots:{},
         emit:()=>{}
     }
     component.emit=emit.bind(null,vnode.props) as any
@@ -17,8 +19,8 @@ export function createComponentInstance(vnode: any) {
 }
 
 export function setupComponent(instance) {
-    initProps(instance)
-    // TODO initSlots()
+    initProps(instance,instance.vnode.props)
+    initSlots(instance,instance.vnode.children);
     // 处理 setup 的返回值
     setupStatefulComponent(instance)
 }

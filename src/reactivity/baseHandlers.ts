@@ -1,6 +1,6 @@
 import {track, trigger} from './effect'
 import {reactive, ReactiveFlags, readonly} from "./reactive";
-import {extend, isObject} from "../shard";
+import {extend, isObject} from "../shard/index";
 
 const get = createGetter()
 const readonlyGet = createGetter(true)

@@ -1,4 +1,4 @@
-import {extend} from '../shard'
+import {extend} from '../shard/index'
 
 let activeEffect
 //是否应该收集依赖

@@ -1,5 +1,5 @@
 import {createVNode} from "./vnode";
 
-export function h(type,props,child) {
-    return createVNode(type,props,child)
+export function h(type,props,children) {
+    return createVNode(type,props,children)
 }

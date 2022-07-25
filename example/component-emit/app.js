@@ -3,6 +3,7 @@ import {foo} from "./foo.js";
 
 export const App = {
     render() {
+        window.self = this
         return h(
             'div',
             {
@@ -15,13 +16,17 @@ export const App = {
                         console.log(`click---${this.msg}`)
                     }
                 }, this.msg),
-                h(foo, {count: 1})
+                h(foo, {text: 'Add',onButtonClick:this.click})
             ]
         )
     },
     setup() {
+        const click=(...arg)=>{
+            console.log('button-click',arg)
+        }
         return {
-            msg: 'mini-vue'
+            msg: 'mini-vue',
+            click
         }
     }
 }

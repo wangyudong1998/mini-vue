@@ -22,7 +22,7 @@ function processElement(vnode, container) {
 }
 
 function mountElement(vnode, container) {
-    const {type, props, child} = vnode
+    const {type, props, children} = vnode
     let el = vnode.el = document.createElement(type)
     for (const propKey in props) {
         //事件
@@ -33,16 +33,16 @@ function mountElement(vnode, container) {
             el.setAttribute(propKey, props[propKey])
         }
     }
-    if (isString(child)) {
-        el.textContent = child
-    } else if (isArray(child)) {
-        mountChild(child, el)
+    if (isString(children)) {
+        el.textContent = children
+    } else if (isArray(children)) {
+        mountChild(children, el)
     }
     container.appendChild(el)
 }
 
-function mountChild(child: any, container: any) {
-    for (const childElement of child) {
+function mountChild(children: any, container: any) {
+    for (const childElement of children) {
         patch(childElement, container)
     }
 }
