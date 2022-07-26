@@ -1,4 +1,4 @@
-import {h} from "../../lib/mini-vue.esm.js"
+import {h,createTextVNode} from "../../lib/mini-vue.esm.js"
 import {Foo} from "./foo.js"
 export const App = {
     render() {
@@ -13,7 +13,8 @@ export const App = {
             null,
             {
                 header:({title})=>h('div',{},'hhhhhh'+title),
-                footer:()=>h('div',{},'ffffff')
+                // 文本节点
+                footer:()=>createTextVNode('footer')
             }
         )
         return h('div', null,[foo])

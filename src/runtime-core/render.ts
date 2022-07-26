@@ -1,5 +1,6 @@
 import {createComponentInstance, setupComponent} from "./component";
 import {isArray, isObject, isOn, isString} from "../shard/index";
+import {Fragment, Text} from "./vnode";
 
 export function render(vnode, container) {
     // 调用 patch 方法，对于子节点进行递归处理
@@ -9,13 +10,35 @@ export function render(vnode, container) {
 
 function patch(vnode, container) {
     // 判断节点类型
-    if (isString(vnode.type)) {
-        processElement(vnode, container)
-    } else if (isObject(vnode.type)) {
-        processComponent(vnode, container);
+    switch (vnode.type) {
+        case Fragment: {
+            processFragment(vnode,container)
+            break
+        }
+        case Text:{
+            processText(vnode,container)
+            break
+        }
+        default: {
+            if (isString(vnode.type)) {
+                processElement(vnode, container)
+            } else if (isObject(vnode.type)) {
+                processComponent(vnode, container);
+            }
+            break
+        }
     }
+
 }
 
+function processText(vnode,container){
+    const text=vnode.el=document.createTextNode(vnode.children)
+    container.appendChild(text)
+}
+
+function processFragment(vnode,container){
+    mountChild(vnode.children,container)
+}
 
 function processElement(vnode, container) {
     mountElement(vnode, container)
@@ -27,8 +50,8 @@ function mountElement(vnode, container) {
     for (const propKey in props) {
         //事件
         if (isOn(propKey)) {
-            let event=propKey.slice(2).toLowerCase()
-            el.addEventListener(event,props[propKey])
+            let event = propKey.slice(2).toLowerCase()
+            el.addEventListener(event, props[propKey])
         } else {
             el.setAttribute(propKey, props[propKey])
         }
