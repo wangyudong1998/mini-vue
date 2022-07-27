@@ -1,9 +1,13 @@
 import {h} from "../h";
 import {Fragment} from "../vnode";
 
-export function renderSlots(slots, name = 'default',prop) {
+export function renderSlots(slots, name = 'default', prop) {
     const slot = slots[name]
     if (slot) {
-        return h(Fragment, null, slot(prop))
+        if (name === 'default') {
+            return h(Fragment, null, slot)
+        } else {
+            return h(Fragment, null, slot(prop))
+        }
     }
 }
