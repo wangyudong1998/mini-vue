@@ -4,7 +4,7 @@ import {shallowReadonly} from "../reactivity/reactive";
 import {emit} from "./componentEmit";
 import {initSlots} from "./componentSlots";
 
-export function createComponentInstance(vnode: any) {
+export function createComponentInstance(vnode: any,parent) {
     // 返回一个 component 结构的数据
     const component = {
         vnode,
@@ -12,6 +12,8 @@ export function createComponentInstance(vnode: any) {
         setupState: {},
         props:{},
         slots:{},
+        parent,
+        provides:parent?Object.create(parent.provides):{},
         emit:()=>{}
     }
     component.emit=emit.bind(null,vnode.props) as any
