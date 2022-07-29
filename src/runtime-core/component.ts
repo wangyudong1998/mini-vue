@@ -3,26 +3,29 @@ import {initProps} from "./componentProps";
 import {shallowReadonly} from "../reactivity/reactive";
 import {emit} from "./componentEmit";
 import {initSlots} from "./componentSlots";
+import {proxyRefs} from "../reactivity/ref";
 
-export function createComponentInstance(vnode: any,parent) {
+export function createComponentInstance(vnode: any, parent) {
     // 返回一个 component 结构的数据
     const component = {
         vnode,
         type: vnode.type,
         setupState: {},
-        props:{},
-        slots:{},
+        props: {},
+        slots: {},
         parent,
-        provides:parent?Object.create(parent.provides):{},
-        emit:()=>{}
+        provides: parent ? Object.create(parent.provides) : {},
+        isMounted:false,
+        subTree:{},
+        emit: () => {}
     }
-    component.emit=emit.bind(null,vnode.props) as any
+    component.emit = emit.bind(null, vnode.props) as any
     return component
 }
 
 export function setupComponent(instance) {
-    initProps(instance,instance.vnode.props)
-    initSlots(instance,instance.vnode.children);
+    initProps(instance, instance.vnode.props)
+    initSlots(instance, instance.vnode.children);
     // 处理 setup 的返回值
     setupStatefulComponent(instance)
 }
@@ -45,8 +48,9 @@ function setupStatefulComponent(instance: any) {
         // 获取到 setup() 的返回值，这里有两种情况，如果返回的是 function，那么这个 function 将会作为组件的 render
         // 反之就是 setupState，将其注入到上下文中
         // props是不可以被修改的
+        // 通过proxyRefs对setup中的ref进行解包
         setCurrentInstance(instance)
-        const setupResult = setup(shallowReadonly(instance.props),{emit:instance.emit})
+        const setupResult = proxyRefs(setup(shallowReadonly(instance.props), {emit: instance.emit}))
         setCurrentInstance(null)
         // 调用初始化结束函数
         handleSetupResult(instance, setupResult)
@@ -70,9 +74,11 @@ function finishComponentSetup(instance) {
 }
 
 let currentInstance
-function setCurrentInstance(value){
-    currentInstance=value
+
+function setCurrentInstance(value) {
+    currentInstance = value
 }
-export function getCurrentInstance(){
+
+export function getCurrentInstance() {
     return currentInstance
 }
