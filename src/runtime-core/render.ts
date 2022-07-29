@@ -4,7 +4,13 @@ import {Fragment, Text} from "./vnode";
 import {createAppAPI} from "./createApp";
 
 export function createRender(opts) {
-    const {createElement,patchProp,insert}=opts
+    const {
+        createElement: hostCreateElement, //创建元素
+        patchProp: hostPatchProp,   //添加属性
+        insert: hostInsert, //向父元素添加子节点
+        selector:hostSelector
+    } = opts
+
     function render(vnode, container) {
         // 调用 patch 方法，对于子节点进行递归处理
         patch(vnode, container, null)
@@ -49,16 +55,16 @@ export function createRender(opts) {
 
     function mountElement(vnode, container, parent) {
         const {type, props, children} = vnode
-        let el = vnode.el = createElement(type)
+        let el = vnode.el = hostCreateElement(type)
         for (const key in props) {
-            patchProp(el, key, props)
+            hostPatchProp(el, key, props[key])
         }
         if (isString(children)) {
             el.textContent = children
         } else if (isArray(children)) {
             mountChild(children, el, parent)
         }
-        insert(el, container)
+        hostInsert(el, container)
     }
 
     function mountChild(children: any, container: any, parent) {
@@ -86,7 +92,8 @@ export function createRender(opts) {
         // 当所有element都mount 完后将根结点el赋值到组件的虚拟节点上
         vnode.el = subTree.el
     }
-    return{
-        createApp:createAppAPI(render)
+
+    return {
+        createApp: createAppAPI(render,hostSelector)
     }
 }
