@@ -4,14 +4,18 @@ import {createRender} from "../runtime-core/render";
 function createElement(type){
     return document.createElement(type)
 }
-function patchProp(el,key,val){
+function patchProp(el,key,prevVal,nextVal){
     if (isOn(key)) {
         //事件
         let event = key.slice(2).toLowerCase()
-        el.addEventListener(event,val)
+        el.addEventListener(event,nextVal)
     } else {
         // 属性
-        el.setAttribute(key,val)
+        if(nextVal===null||nextVal===undefined){
+            el.removeAttribute(key)
+        }else{
+            el.setAttribute(key,nextVal)
+        }
     }
 }
 function insert(el,container){
