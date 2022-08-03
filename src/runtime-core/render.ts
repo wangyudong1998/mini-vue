@@ -9,7 +9,9 @@ export function createRender(opts) {
         createElement: hostCreateElement, //创建元素
         patchProp: hostPatchProp,   //添加属性
         insert: hostInsert, //向父元素添加子节点
-        selector: hostSelector
+        selector: hostSelector, //获取根结点
+        remove:hostRemove, //删除子节点
+        setElementText:hostSetElementText, //设置文本节点
     } = opts
 
     function render(vnode, container) {
@@ -55,10 +57,10 @@ export function createRender(opts) {
         if(!n1){
             mountElement(n2, container, parent)
         }else{
-            patchElement(n1,n2,container)
+            patchElement(n1,n2,container,parent)
         }
     }
-    function patchElement(n1,n2,container){
+    function patchElement(n1,n2,container,parent){
         const oldProps=n1.props||{}
         const newProps=n2.props||{}
         // 这里需要传递 el，我们需要考虑一点，到这一层的时候
@@ -66,6 +68,33 @@ export function createRender(opts) {
         // 这是因为在下次 patch 的时候 n2 === n1, 此刻的新节点变成旧节点，el 就生效了
         const el=n2.el=n1.el
         patchProp(el,oldProps,newProps)
+        patchChildren(n1,n2,container,parent)
+    }
+    function patchChildren(n1,n2,container,parent){
+        // 新节点是文本
+        if(isString(n2.children)){
+            // 老节点是数组  Array -> Text 先清空原有children  再挂载新的文本
+            if(isArray(n1.children)){
+                unmountChildren(n1.children)
+            }
+            // 老节点是文本 Text -> Text 两者不相等时更新节点（老节点是数组时也会走这里）
+            if(n1.children!==n2.children){
+                hostSetElementText(n2.el,n2.children)
+            }
+        }else{
+            // 新节点是数组
+            //老节点是文本时 Text->Array 清空Text并挂载新节点
+            if(isString(n1.children)){
+                hostSetElementText(n1.el,'')
+                mountChild(n2.children,container,parent)
+            }
+        }
+    }
+    function unmountChildren(children){
+        // 遍历children并清空
+        for (const child of children){
+            hostRemove(child.el)
+        }
     }
     function patchProp(el,oldProps,newProps){
         for (const key in newProps) {

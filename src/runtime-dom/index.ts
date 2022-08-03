@@ -21,11 +21,24 @@ function patchProp(el,key,prevVal,nextVal){
 function insert(el,container){
     container.appendChild(el)
 }
+
+function remove(child){
+    // 获取到父节点，【parentNode 是 DOM API】
+    const parentElement=child.parentNode
+    if(parentElement){
+        parentElement.removeChild(child)
+    }
+}
+function setElementText(el,text){
+    el.textContent=text
+}
+
 function selector(container){
     return document.querySelector(container)
 }
+
 //将自己实现的 DOM API 传入 createRenderer 创建渲染器
-const render:any=createRender({createElement,patchProp,insert,selector})
+const render:any=createRender({createElement,patchProp,insert,selector,remove,setElementText})
 // 暴露出createApp
 export function createApp(...arg){
     return render.createApp(...arg)
