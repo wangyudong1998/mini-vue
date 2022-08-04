@@ -18,8 +18,9 @@ function patchProp(el,key,prevVal,nextVal){
         }
     }
 }
-function insert(el,container){
-    container.appendChild(el)
+function insert(el,container,anchor){
+    // [insertBefore] 在某个子元素前插入,为null时默认在结尾插入
+    container.insertBefore(el, anchor || null)
 }
 
 function remove(child){
