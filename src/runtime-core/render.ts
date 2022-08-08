@@ -101,9 +101,10 @@ export function createRender(opts) {
 
     function patchKeyedChildren(c1, c2, container, parent,anchor) {
         // 声明三个指针，i是当前对比的元素（默认为0），e1是老节点的最后一个元素，e2是新节点的最后一个元素
+        const l2=c2.length
         let i = 0
         let e1 = c1.length - 1
-        let e2 = c2.length - 1
+        let e2 = l2 - 1
 
         //通过type和key判断两个节点是否相同
         function isSameVNode(n1, n2) {
@@ -142,7 +143,7 @@ export function createRender(opts) {
                 // 如果没有超过新节点的长度，那么就是插入到某个位置
                 // 此时 anchor = c2[nextPos].el，也就是这个新加元素的下一个元素
                 const nextPos=e2+1
-                const anchor=nextPos<c2.length?c2[nextPos].el:null
+                const anchor=nextPos<l2?c2[nextPos].el:null
                 while (i <= e2) {
                     patch(null, c2[i], container, parent,anchor)
                     i++
@@ -160,12 +161,18 @@ export function createRender(opts) {
             // 中间对比
             const s1=i
             const s2=i
-            // 新的节点(c2)中混乱的节点
-            const keyToNewIndexMap=new Map()
             //需要patch的新节点的数量
             const toBePatched=e2-s2+1
             //已经patch过的节点个数
             let patched=0
+            // 新的节点(c2)中混乱的节点
+            const keyToNewIndexMap=new Map()
+
+            // 储存旧节点混乱元素的索引，创建定长数组，性能更好
+            const newIndexToOldIndexMap = new Array(toBePatched)
+            // 循环初始化每一项索引，0 表示未建立映射关系
+            for (let i = 0; i < toBePatched; i++) newIndexToOldIndexMap[i] = 0
+
             // 给混乱节点添加映射
             for (let i = s2; i<=e2 ; i++) {
                 const nextChild=c2[i]
@@ -178,7 +185,6 @@ export function createRender(opts) {
                 const preChild=c1[i]
                 let newIndex
                 if (patched >= toBePatched) {
-                    console.log('2')
                     // 如果当前 patched 的个数 >= 应该 patched 的个数
                     // 那么直接删除
                     hostRemove(preChild.el)
@@ -200,9 +206,32 @@ export function createRender(opts) {
                 if(newIndex===undefined){
                     hostRemove(preChild.el)
                 }else{
+                    // 确定新节点存在，储存索引映射关系
+                    // newIndex 获取到当前老节点在新节点中的元素，减去 s2 是要将整个混乱的部分拆开，索引归于 0
+                    // 为什么是 i + 1 是因为需要考虑 i 是 0 的情况，因为我们的索引映射表中 0 表示的是初始化状态
+                    // 所以不能是 0，因此需要用到 i + 1
+                    newIndexToOldIndexMap[newIndex - s2] = i + 1
                     // 如果存在，则进入patch阶段 继续递归对比
                     patch(preChild,c2[newIndex],container,parent,null)
                     patched++
+                }
+            }
+
+            // 获取最长递增子序列索引
+            const increasingNewIndexSequence = getSequence(newIndexToOldIndexMap)
+            let j = increasingNewIndexSequence.length - 1
+            for (let i = toBePatched - 1; i >= 0; i--) {
+                // 获取元素的索引
+                const nextIndex = i + s2
+                // 获取到需要插入的元素
+                const nextChild = c2[nextIndex]
+                // 获取锚点
+                const anchor = nextIndex + 1 < l2 ? c2[nextIndex + 1].el : null
+                if (j <= 0 ||i !== increasingNewIndexSequence[j]) {
+                    // 移动
+                    hostInsert(nextChild.el, container, anchor)
+                } else {
+                    j -= 1
                 }
             }
         }
@@ -292,4 +321,44 @@ export function createRender(opts) {
     return {
         createApp: createAppAPI(render, hostSelector)
     }
+}
+function getSequence(arr) {
+    const p = arr.slice();
+    const result = [0];
+    let i, j, u, v, c;
+    const len = arr.length;
+    for (i = 0; i < len; i++) {
+        const arrI = arr[i];
+        if (arrI !== 0) {
+            j = result[result.length - 1];
+            if (arr[j] < arrI) {
+                p[i] = j;
+                result.push(i);
+                continue;
+            }
+            u = 0;
+            v = result.length - 1;
+            while (u < v) {
+                c = (u + v) >> 1;
+                if (arr[result[c]] < arrI) {
+                    u = c + 1;
+                } else {
+                    v = c;
+                }
+            }
+            if (arrI < arr[result[u]]) {
+                if (u > 0) {
+                    p[i] = result[u - 1];
+                }
+                result[u] = i;
+            }
+        }
+    }
+    u = result.length;
+    v = result[u - 1];
+    while (u-- > 0) {
+        result[u] = v;
+        v = p[v];
+    }
+    return result;
 }
