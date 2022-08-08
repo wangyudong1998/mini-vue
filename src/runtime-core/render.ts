@@ -16,16 +16,16 @@ export function createRender(opts) {
 
     function render(vnode, container) {
         // 调用 patch 方法，对于子节点进行递归处理
-        patch(null, vnode, container, null,null)
+        patch(null, vnode, container, null, null)
     }
 
     // n1 ->老的虚拟节点 不存在即为初始化 存在代表更新
     // n2 ->新的虚拟节点
-    function patch(n1, n2, container, parent,anchor) {
+    function patch(n1, n2, container, parent, anchor) {
         // 判断节点类型
         switch (n2.type) {
             case Fragment: {
-                processFragment(n1, n2, container, parent,anchor)
+                processFragment(n1, n2, container, parent, anchor)
                 break
             }
             case Text: {
@@ -34,9 +34,9 @@ export function createRender(opts) {
             }
             default: {
                 if (isString(n2.type)) {
-                    processElement(n1, n2, container, parent,anchor)
+                    processElement(n1, n2, container, parent, anchor)
                 } else if (isObject(n2.type)) {
-                    processComponent(n1, n2, container, parent,anchor);
+                    processComponent(n1, n2, container, parent, anchor);
                 }
                 break
             }
@@ -49,19 +49,19 @@ export function createRender(opts) {
         container.appendChild(text)
     }
 
-    function processFragment(n1, n2, container, parent,anchor) {
-        mountChild(n2.children, container, parent,anchor)
+    function processFragment(n1, n2, container, parent, anchor) {
+        mountChild(n2.children, container, parent, anchor)
     }
 
-    function processElement(n1, n2, container, parent,anchor) {
+    function processElement(n1, n2, container, parent, anchor) {
         if (!n1) {
-            mountElement(n2, container, parent,anchor)
+            mountElement(n2, container, parent, anchor)
         } else {
-            patchElement(n1, n2, container, parent,anchor)
+            patchElement(n1, n2, container, parent, anchor)
         }
     }
 
-    function patchElement(n1, n2, container, parent,anchor) {
+    function patchElement(n1, n2, container, parent, anchor) {
         const oldProps = n1.props || {}
         const newProps = n2.props || {}
         // 这里需要传递 el，我们需要考虑一点，到这一层的时候
@@ -69,10 +69,10 @@ export function createRender(opts) {
         // 这是因为在下次 patch 的时候 n2 === n1, 此刻的新节点变成旧节点，el 就生效了
         const el = n2.el = n1.el
         patchProp(el, oldProps, newProps)
-        patchChildren(n1, n2, el, parent,anchor)
+        patchChildren(n1, n2, el, parent, anchor)
     }
 
-    function patchChildren(n1, n2, container, parent,anchor) {
+    function patchChildren(n1, n2, container, parent, anchor) {
         const c1 = n1.children
         const c2 = n2.children
 
@@ -91,17 +91,17 @@ export function createRender(opts) {
             //老节点是文本时 Text->Array 清空Text并挂载新节点
             if (isString(c1)) {
                 hostSetElementText(n1.el, '')
-                mountChild(c2, container, parent,anchor)
+                mountChild(c2, container, parent, anchor)
             } else {
                 //老节点是数组  Array->Array
-                patchKeyedChildren(c1, c2, container, parent,anchor)
+                patchKeyedChildren(c1, c2, container, parent, anchor)
             }
         }
     }
 
-    function patchKeyedChildren(c1, c2, container, parent,anchor) {
+    function patchKeyedChildren(c1, c2, container, parent, anchor) {
         // 声明三个指针，i是当前对比的元素（默认为0），e1是老节点的最后一个元素，e2是新节点的最后一个元素
-        const l2=c2.length
+        const l2 = c2.length
         let i = 0
         let e1 = c1.length - 1
         let e2 = l2 - 1
@@ -116,7 +116,7 @@ export function createRender(opts) {
         // 就进入 patch 阶段，如果不相等，直接中断掉这个循环
         while (i <= e1 && i <= e2) {
             if (isSameVNode(c1[i], c2[i])) {
-                patch(c1[i], c2[i], container, parent,anchor)
+                patch(c1[i], c2[i], container, parent, anchor)
             } else {
                 break
             }
@@ -126,7 +126,7 @@ export function createRender(opts) {
         //从尾部开始对比
         while (i <= e1 && i <= e2) {
             if (isSameVNode(c1[e1], c2[e2])) {
-                patch(c1[e1], c2[e2], container, parent,anchor)
+                patch(c1[e1], c2[e2], container, parent, anchor)
             } else {
                 break
             }
@@ -136,37 +136,42 @@ export function createRender(opts) {
 
         // 前后对比结束
         //新节点比老节点多 新增
-        if (i >e1) {
+        if (i > e1) {
             if (i <= e2) {
                 // nextPos 就是需要追加元素的索引
                 // 如果这个新元素的索引已经超过了新节点的长度，那么说明是追加到尾部 anchor = null
                 // 如果没有超过新节点的长度，那么就是插入到某个位置
                 // 此时 anchor = c2[nextPos].el，也就是这个新加元素的下一个元素
-                const nextPos=e2+1
-                const anchor=nextPos<l2?c2[nextPos].el:null
+                const nextPos = e2 + 1
+                const anchor = nextPos < l2 ? c2[nextPos].el : null
                 while (i <= e2) {
-                    patch(null, c2[i], container, parent,anchor)
+                    patch(null, c2[i], container, parent, anchor)
                     i++
                 }
             }
-        }else if(i>e2){
+        } else if (i > e2) {
             //老节点比新节点少 删除
-            if(i<=e1){
-                while(i<=e1){
+            if (i <= e1) {
+                while (i <= e1) {
                     hostRemove(c1[i].el)
                     i++
                 }
             }
-        } else{
+        } else {
             // 中间对比
-            const s1=i
-            const s2=i
+            const s1 = i
+            const s2 = i
             //需要patch的新节点的数量
-            const toBePatched=e2-s2+1
+            const toBePatched = e2 - s2 + 1
             //已经patch过的节点个数
-            let patched=0
+            let patched = 0
             // 新的节点(c2)中混乱的节点
-            const keyToNewIndexMap=new Map()
+            const keyToNewIndexMap = new Map()
+
+            // 是否应该移动
+            let shouldMove = false
+            // 目前最大的索引
+            let maxNewIndexSoFar = 0
 
             // 储存旧节点混乱元素的索引，创建定长数组，性能更好
             const newIndexToOldIndexMap = new Array(toBePatched)
@@ -174,15 +179,15 @@ export function createRender(opts) {
             for (let i = 0; i < toBePatched; i++) newIndexToOldIndexMap[i] = 0
 
             // 给混乱节点添加映射
-            for (let i = s2; i<=e2 ; i++) {
-                const nextChild=c2[i]
-                if(nextChild.key){
-                    keyToNewIndexMap.set(nextChild.key,i)
+            for (let i = s2; i <= e2; i++) {
+                const nextChild = c2[i]
+                if (nextChild.key) {
+                    keyToNewIndexMap.set(nextChild.key, i)
                 }
             }
             //循环老的节点
-            for (let i = s1; i <=e1 ; i++) {
-                const preChild=c1[i]
+            for (let i = s1; i <= e1; i++) {
+                const preChild = c1[i]
                 let newIndex
                 if (patched >= toBePatched) {
                     // 如果当前 patched 的个数 >= 应该 patched 的个数
@@ -191,34 +196,45 @@ export function createRender(opts) {
                     continue
                 }
                 // 如果当前老节点存在key 则去映射中查找对应的新节点的index
-                if(preChild.key){
-                    newIndex=keyToNewIndexMap.get(preChild.key)
-                }else{
+                if (preChild.key) {
+                    newIndex = keyToNewIndexMap.get(preChild.key)
+                } else {
                     //如果老节点没有key 则需要重新遍历新节点 查找相同节点的索引
-                    for (let j = s2; j <=e2 ; j++) {
-                        if(isSameVNode(preChild,c2[j])){
-                            newIndex=j
+                    for (let j = s2; j <= e2; j++) {
+                        if (isSameVNode(preChild, c2[j])) {
+                            newIndex = j
                             break
                         }
                     }
                 }
                 //如果新节点中不存在对应的老节点，就删除老节点
-                if(newIndex===undefined){
+                if (newIndex === undefined) {
                     hostRemove(preChild.el)
-                }else{
+                } else {
+                    // 在储存索引的时候
+                    // 判断是否需要移动
+                    // 如果说当前的索引 >= 记录的最大索引
+                    if (newIndex >= maxNewIndexSoFar) {
+                        // 就把当前的索引给到最大的索引
+                        maxNewIndexSoFar = newIndex
+                    } else {
+                        // 否则就不是一直递增，那么就是需要移动的
+                        shouldMove = true
+                    }
+
                     // 确定新节点存在，储存索引映射关系
                     // newIndex 获取到当前老节点在新节点中的元素，减去 s2 是要将整个混乱的部分拆开，索引归于 0
                     // 为什么是 i + 1 是因为需要考虑 i 是 0 的情况，因为我们的索引映射表中 0 表示的是初始化状态
                     // 所以不能是 0，因此需要用到 i + 1
                     newIndexToOldIndexMap[newIndex - s2] = i + 1
                     // 如果存在，则进入patch阶段 继续递归对比
-                    patch(preChild,c2[newIndex],container,parent,null)
+                    patch(preChild, c2[newIndex], container, parent, null)
                     patched++
                 }
             }
 
             // 获取最长递增子序列索引
-            const increasingNewIndexSequence = getSequence(newIndexToOldIndexMap)
+            const increasingNewIndexSequence = shouldMove ? getSequence(newIndexToOldIndexMap) : []
             let j = increasingNewIndexSequence.length - 1
             for (let i = toBePatched - 1; i >= 0; i--) {
                 // 获取元素的索引
@@ -227,11 +243,13 @@ export function createRender(opts) {
                 const nextChild = c2[nextIndex]
                 // 获取锚点
                 const anchor = nextIndex + 1 < l2 ? c2[nextIndex + 1].el : null
-                if (j <= 0 ||i !== increasingNewIndexSequence[j]) {
-                    // 移动
-                    hostInsert(nextChild.el, container, anchor)
-                } else {
-                    j -= 1
+                if (shouldMove) {
+                    if (j <= 0 || i !== increasingNewIndexSequence[j]) {
+                        // 移动
+                        hostInsert(nextChild.el, container, anchor)
+                    } else {
+                        j -= 1
+                    }
                 }
             }
         }
@@ -261,7 +279,7 @@ export function createRender(opts) {
         }
     }
 
-    function mountElement(vnode, container, parent,anchor) {
+    function mountElement(vnode, container, parent, anchor) {
         const {type, props, children} = vnode
         let el = vnode.el = hostCreateElement(type)
         for (const key in props) {
@@ -270,30 +288,30 @@ export function createRender(opts) {
         if (isString(children)) {
             el.textContent = children
         } else if (isArray(children)) {
-            mountChild(children, el, parent,anchor)
+            mountChild(children, el, parent, anchor)
         }
-        hostInsert(el, container,anchor)
+        hostInsert(el, container, anchor)
     }
 
-    function mountChild(children: any, container: any, parent,anchor) {
+    function mountChild(children: any, container: any, parent, anchor) {
         children.forEach(v => {
-            patch(null, v, container, parent,anchor)
+            patch(null, v, container, parent, anchor)
         })
     }
 
-    function processComponent(n1, n2: any, container: any, parent,anchor) {
-        mountComponent(n2, container, parent,anchor)
+    function processComponent(n1, n2: any, container: any, parent, anchor) {
+        mountComponent(n2, container, parent, anchor)
     }
 
-    function mountComponent(initialVnode: any, container, parent,anchor) {
+    function mountComponent(initialVnode: any, container, parent, anchor) {
         // 通过vnode创建组件实例
         const instance = createComponentInstance(initialVnode, parent)
         // 组件初始化
         setupComponent(instance)
-        setupRenderEffect(initialVnode, instance, container,anchor)
+        setupRenderEffect(initialVnode, instance, container, anchor)
     }
 
-    function setupRenderEffect(vnode, instance, container,anchor) {
+    function setupRenderEffect(vnode, instance, container, anchor) {
         // 包一层 effect，执行的时候去收集依赖，并在值更新的时候重新渲染视图
         effect(() => {
             // 根据isMounted状态判断是组件否加载过
@@ -302,7 +320,7 @@ export function createRender(opts) {
                 const {proxy} = instance
                 // 通过组件实例上的proxy改变render函数的this指向
                 const subTree = (instance.subTree = instance.render.call(proxy))
-                patch(null, subTree, container, instance,anchor)
+                patch(null, subTree, container, instance, anchor)
                 // 当所有element都mount完后将根结点el赋值到组件的虚拟节点上
                 vnode.el = subTree.el
                 instance.isMounted = true
@@ -313,7 +331,7 @@ export function createRender(opts) {
                 // 获取上一个subTree
                 const preSubTrue = instance.subTree
                 instance.subTree = subTree
-                patch(preSubTrue, subTree, container, instance,anchor)
+                patch(preSubTrue, subTree, container, instance, anchor)
             }
         })
     }
@@ -322,6 +340,7 @@ export function createRender(opts) {
         createApp: createAppAPI(render, hostSelector)
     }
 }
+
 function getSequence(arr) {
     const p = arr.slice();
     const result = [0];
