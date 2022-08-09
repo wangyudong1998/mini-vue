@@ -135,7 +135,7 @@ export function createRender(opts) {
         }
 
         // 前后对比结束
-        //新节点比老节点多 新增
+        //新节点比老节点多 新增新节点
         if (i > e1) {
             if (i <= e2) {
                 // nextPos 就是需要追加元素的索引
@@ -149,8 +149,7 @@ export function createRender(opts) {
                     i++
                 }
             }
-        } else if (i > e2) {
-            //老节点比新节点少 删除
+        } else if (i > e2) {    //新节点比老节点少 删除老节点
             if (i <= e1) {
                 while (i <= e1) {
                     hostRemove(c1[i].el)
