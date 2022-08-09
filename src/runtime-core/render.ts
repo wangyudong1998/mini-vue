@@ -244,6 +244,7 @@ export function createRender(opts) {
                 // 获取锚点
                 const anchor = nextIndex + 1 < l2 ? c2[nextIndex + 1].el : null
 
+                // 如果说某一项是0，证明这一项在旧节点中不存在，那么就需要创建了
                 if(newIndexToOldIndexMap[i]===0){
                     patch(null, nextChild, container, parent, anchor);
                 }else if (shouldMove) {
