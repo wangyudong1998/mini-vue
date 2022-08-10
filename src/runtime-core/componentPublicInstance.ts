@@ -2,7 +2,8 @@ import {hasOwn} from "../shard/index";
 
 const publicPropertiesMap = {
     '$el': (i) => i.vnode.el,
-    '$slots':(i)=>i.slots
+    '$slots': (i) => i.slots,
+    '$props': (i) => i.props
 }
 export const publicInstanceProxyHandlers = {
     get({_: instance}, key) {
@@ -11,12 +12,12 @@ export const publicInstanceProxyHandlers = {
             if (key in setupState) {
                 return setupState[key]
             }
-        } else if (hasOwn(props,key)){
+        } else if (hasOwn(props, key)) {
             if (key in props) {
                 return props[key]
             }
         }
-            const publicGetter = publicPropertiesMap[key]
+        const publicGetter = publicPropertiesMap[key]
         if (publicGetter) {
             return publicGetter(instance)
         }

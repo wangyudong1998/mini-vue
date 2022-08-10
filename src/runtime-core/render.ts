@@ -244,9 +244,9 @@ export function createRender(opts) {
                 const anchor = nextIndex + 1 < l2 ? c2[nextIndex + 1].el : null
 
                 // 如果说某一项是0，证明这一项在旧节点中不存在，那么就需要创建了
-                if(newIndexToOldIndexMap[i]===0){
+                if (newIndexToOldIndexMap[i] === 0) {
                     patch(null, nextChild, container, parent, anchor);
-                }else if (shouldMove) {
+                } else if (shouldMove) {
                     if (j <= 0 || i !== increasingNewIndexSequence[j]) {
                         // 移动
                         hostInsert(nextChild.el, container, anchor)
@@ -303,12 +303,39 @@ export function createRender(opts) {
     }
 
     function processComponent(n1, n2: any, container: any, parent, anchor) {
-        mountComponent(n2, container, parent, anchor)
+        if (!n1) {
+            mountComponent(n2, container, parent, anchor)
+        } else {
+            updateComponent(n1, n2)
+        }
     }
 
+    function updateComponent(n1, n2) {
+        const instance = n2.component = n1.component
+        // 增加一个判断，如果需要更新，再进入更新的逻辑
+        if (shouldUpdateComponent(n1, n2)) {
+            instance.next = n2
+            instance.update()
+        } else {
+            // 不需要更新，就重置就好了
+            n2.el=n1.el
+            instance.vnode=n2
+        }
+    }
+    // 对 props 进行判断，如果新旧 props 不相等，那么就意味着需要更新
+    function shouldUpdateComponent(preVNode,nextVNode){
+        const {props:preProps}=preVNode
+        const {props:nextProps}=nextVNode
+        for (const key in nextProps){
+            if(nextProps[key]!==preProps[key]){
+                return true
+            }
+        }
+        return false
+    }
     function mountComponent(initialVnode: any, container, parent, anchor) {
         // 通过vnode创建组件实例
-        const instance = createComponentInstance(initialVnode, parent)
+        const instance = initialVnode.component = createComponentInstance(initialVnode, parent)
         // 组件初始化
         setupComponent(instance)
         setupRenderEffect(initialVnode, instance, container, anchor)
@@ -316,7 +343,7 @@ export function createRender(opts) {
 
     function setupRenderEffect(vnode, instance, container, anchor) {
         // 包一层 effect，执行的时候去收集依赖，并在值更新的时候重新渲染视图
-        effect(() => {
+        instance.update = effect(() => {
             // 根据isMounted状态判断是组件否加载过
             if (!instance.isMounted) {
                 // init
@@ -328,6 +355,12 @@ export function createRender(opts) {
                 vnode.el = subTree.el
                 instance.isMounted = true
             } else {
+                const {next, vnode} = instance
+                if (next) {
+                    //更新组件的el和props
+                    next.el = vnode.el
+                    updateComponentPreRender(instance, next)
+                }
                 // update
                 const {proxy} = instance
                 const subTree = instance.render.call(proxy)
@@ -342,6 +375,14 @@ export function createRender(opts) {
     return {
         createApp: createAppAPI(render, hostSelector)
     }
+}
+
+// 首先将 vnode 更新，然后更新 props
+// 最后将 next 设置为空
+function updateComponentPreRender(instance, nextVNode) {
+    instance.vnode = nextVNode
+    instance.props = nextVNode.props
+    instance.next = null
 }
 
 function getSequence(arr) {
